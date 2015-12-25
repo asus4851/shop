@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\models\Products;
 use app\models\ProductsSearch;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -17,10 +18,21 @@ class ProductsController extends Controller
     public function behaviors()
     {
         return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
+            'verbs'  => [
+                'class'   => VerbFilter::className(),
                 'actions' => [
                     'delete' => ['post'],
+                ],
+            ],
+            'access' => [
+                'class' => AccessControl::className(),
+                'only'  => ['index', 'create', 'update', 'delete', 'shop', 'item'],
+                'rules' => [
+                    [
+                        'allow'   => true,
+                        'actions' => ['index', 'create', 'update', 'delete', 'shop', 'item'],
+                        'roles'   => ['@'],
+                    ],
                 ],
             ],
         ];
@@ -32,12 +44,30 @@ class ProductsController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new ProductsSearch();
+        $searchModel  = new ProductsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
+            'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionShop()
+    {
+        $searchModel  = new ProductsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('shop', [
+            'searchModel'  => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionItem( $id )
+    {
+        return $this->render('product_item', [
+            'model' => $this->findModel($id),
         ]);
     }
 
@@ -46,7 +76,7 @@ class ProductsController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionView($id)
+    public function actionView( $id )
     {
         return $this->render('view', [
             'model' => $this->findModel($id),
@@ -62,9 +92,11 @@ class ProductsController extends Controller
     {
         $model = new Products();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
             return $this->redirect(['view', 'id' => $model->id]);
-        } else {
+        } else
+        {
             return $this->render('create', [
                 'model' => $model,
             ]);
@@ -77,13 +109,15 @@ class ProductsController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionUpdate($id)
+    public function actionUpdate( $id )
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
             return $this->redirect(['view', 'id' => $model->id]);
-        } else {
+        } else
+        {
             return $this->render('update', [
                 'model' => $model,
             ]);
@@ -96,7 +130,7 @@ class ProductsController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionDelete($id)
+    public function actionDelete( $id )
     {
         $this->findModel($id)->delete();
 
@@ -110,11 +144,13 @@ class ProductsController extends Controller
      * @return Products the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id)
+    protected function findModel( $id )
     {
-        if (($model = Products::findOne($id)) !== null) {
+        if( ($model = Products::findOne($id)) !== null )
+        {
             return $model;
-        } else {
+        } else
+        {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }

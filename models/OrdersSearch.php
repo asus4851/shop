@@ -38,7 +38,7 @@ class OrdersSearch extends Orders
      *
      * @return ActiveDataProvider
      */
-    public function search($params)
+    public function search( $params )
     {
         $query = Orders::find();
 
@@ -48,17 +48,18 @@ class OrdersSearch extends Orders
 
         $this->load($params);
 
-        if (!$this->validate()) {
+        if( !$this->validate() )
+        {
             // uncomment the following line if you do not want to return any records when validation fails
             // $query->where('0=1');
             return $dataProvider;
         }
 
         $query->andFilterWhere([
-            'id' => $this->id,
-            'user_id' => $this->user_id,
+            'id'         => $this->id,
+            'user_id'    => $this->user_id,
             'product_id' => $this->product_id,
-            'quantity' => $this->quantity,
+            'quantity'   => $this->quantity,
         ]);
 
         return $dataProvider;

@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\models\Orders;
 use app\models\OrdersSearch;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -17,10 +18,21 @@ class OrdersController extends Controller
     public function behaviors()
     {
         return [
-            'verbs' => [
-                'class' => VerbFilter::className(),
+            'verbs'  => [
+                'class'   => VerbFilter::className(),
                 'actions' => [
                     'delete' => ['post'],
+                ],
+            ],
+            'access' => [
+                'class' => AccessControl::className(),
+                'only'  => ['index', 'create', 'update', 'delete', 'order', 'cart'],
+                'rules' => [
+                    [
+                        'allow'   => true,
+                        'actions' => ['index', 'create', 'update', 'delete', 'order', 'cart'],
+                        'roles'   => ['@'],
+                    ],
                 ],
             ],
         ];
@@ -32,11 +44,11 @@ class OrdersController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new OrdersSearch();
+        $searchModel  = new OrdersSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
+            'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
     }
@@ -46,7 +58,7 @@ class OrdersController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionView($id)
+    public function actionView( $id )
     {
         return $this->render('view', [
             'model' => $this->findModel($id),
@@ -62,13 +74,47 @@ class OrdersController extends Controller
     {
         $model = new Orders();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
             return $this->redirect(['view', 'id' => $model->id]);
-        } else {
+        } else
+        {
             return $this->render('create', [
                 'model' => $model,
             ]);
         }
+    }
+
+    public function actionOrder()
+    {
+        if( isset($_GET['user_id']) && isset($_GET['product_id']) )
+        {
+            $model             = new Orders();
+            $model->user_id    = $_GET['user_id'];
+            $model->product_id = $_GET['product_id'];
+            $model->quantity   = 1; // Доработать момент передачи выбранного количества
+            $model->save();
+
+            $this->redirect(Yii::$app->request->referrer);
+        } else
+        {
+            echo "Cannot find user_id & product_id in GET request";
+        }
+    }
+
+
+    public function actionCart()
+    {
+        $user_id = Yii::$app->user->identity->id;
+
+        $model = Orders::find()
+            ->where(['user_id' => $user_id])
+            ->all();
+
+        return $this->render('cart', [
+            'model' => $model,
+        ]);
+
     }
 
     /**
@@ -77,13 +123,15 @@ class OrdersController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionUpdate($id)
+    public function actionUpdate( $id )
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
             return $this->redirect(['view', 'id' => $model->id]);
-        } else {
+        } else
+        {
             return $this->render('update', [
                 'model' => $model,
             ]);
@@ -96,7 +144,7 @@ class OrdersController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionDelete($id)
+    public function actionDelete( $id )
     {
         $this->findModel($id)->delete();
 
@@ -110,11 +158,13 @@ class OrdersController extends Controller
      * @return Orders the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id)
+    protected function findModel( $id )
     {
-        if (($model = Orders::findOne($id)) !== null) {
+        if( ($model = Orders::findOne($id)) !== null )
+        {
             return $model;
-        } else {
+        } else
+        {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }

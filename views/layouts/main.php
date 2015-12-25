@@ -35,9 +35,9 @@ AppAsset::register($this);
     ]);
     $navItems = [
         ['label' => 'Home', 'url' => ['/site/index']],
-        ['label' => 'Status', 'url' => ['/status/index']],
-        ['label' => 'About', 'url' => ['/site/about']],
-        ['label' => 'Contact', 'url' => ['/site/contact']],
+        ['label' => 'Products', 'url' => ['/products/shop']],
+        ['label' => 'Cart', 'url' => ['/orders/cart']],
+
     ];
     if( Yii::$app->user->isGuest )
     {

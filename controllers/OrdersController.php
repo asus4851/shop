@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\models\Orders;
 use app\models\OrdersSearch;
+use yii\db\Query;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -92,16 +93,32 @@ class OrdersController extends Controller
             $model             = new Orders();
             $model->user_id    = $_GET['user_id'];
             $model->product_id = $_GET['product_id'];
-            $model->quantity   = 1; // ���������� ������ �������� ���������� ����������
+            $model->quantity   = 1; // Доработать момент передачи выбранного количества
+            $model->confirm    = "no";
             $model->save();
 
-            $this->redirect(Yii::$app->request->referrer);
+            $this->redirect('cart');
         } else
         {
-            echo "Cannot find user_id & product_id in GET request";
+            echo "Cannot find user_id or/and product_id in GET request";
         }
     }
 
+    public function actionConfirm()
+    {
+        $user_id = Yii::$app->user->identity->id;
+
+        Yii::$app->db->createCommand()
+            ->update(Orders::tableName(), ['confirm' => 'yes'],['user_id' => $user_id, 'confirm' => 'no'])
+            ->execute();
+        Yii::$app->controller->redirect('wait');
+    }
+
+    public function actionWait(){
+        echo "Ваш заказ принят, ожидайте звонка менеджера";
+        echo "<br>";
+        echo "<a href='/' class='btn btn-success'>Вернуться на главную страницу</a>";
+    }
 
     public function actionCart()
     {

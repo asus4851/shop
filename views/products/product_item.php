@@ -4,15 +4,14 @@
 use yii\helpers\Html;
 
 ?>
-<div class="col-md-4">
-    <img src="<?= $model->thumbnail; ?>" width="100%" height="200px">
+<div class="col-md-12">
+    <div class="col-md-4">
+        <img src="<?= $model->thumbnail; ?>" width="100%" height="200px">
+    </div>
 
-    <div class="" style="padding: 5px;margin-bottom: 5px; background: #413E4A; color:white;">
-        <p class="text-center">Название:
-            <?= $model->name; ?></p>
-
-        <p class="text-center">Описание:
-            <?= $model->description; ?>
+    <div class="col-md-8">
+        <p>Название:
+            <?= $model->name; ?>
         </p>
 
         <?php $type = ($model->type == 'usual') ? 'hide' : 'show'; ?>
@@ -20,20 +19,38 @@ use yii\helpers\Html;
             <?= $model->type; ?>
         </p>
 
-        <p class="text-center">Цена:
+        <p>Цена:
             <?= $model->price; ?> грн
         </p>
 
-        <p class="text-center">Количество:
-            <?= $model->quantity; ?> шт.
+        <p>Наличие:
+            <?php if( $model->quantity > 10 )
+            {
+                echo "Есть в наличии";
+            } elseif( $model->quantity > 0 && $model->quantity <= 10 )
+            {
+                echo "Товар заканчивается";
+            } else
+            {
+                echo "Нет в наличии";
+            } ?>
         </p>
 
-        <p class="text-center" style="margin:0 auto;">
+        <p style="margin:0 auto;">
             <?= Html::a('Добавить в корзину', ['orders/order', 'user_id' => Yii::$app->user->identity->id,
                                                'product_id'              => $model->id], [
                 'data-method' => 'post',
                 'class'       => 'btn btn-info',
             ]) ?>
         </p>
+
     </div>
+    <div class="col-md-12" style="padding-top:20px;">
+        <p class="text-center">
+            <?= $model->description; ?>
+        </p>
+    </div>
+
+
+</div>
 </div>

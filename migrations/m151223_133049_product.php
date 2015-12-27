@@ -13,7 +13,7 @@ class m151223_133049_product extends Migration
             'id'          => $this->primaryKey(),
             'name'        => $this->string(255)->notNull(),
             'description' => $this->text()->notNull(),
-            'type'        => "ENUM('hot', 'usual') NOT NULL DEFAULT 'usual'",
+            'type'        => $this->string(255)->notNull(),
             'price'       => $this->integer(10)->notNull(),
             'quantity'    => $this->integer(5)->notNull()->defaultValue(0),
             'photo'       => $this->string(255)->notNull(),

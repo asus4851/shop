@@ -1,5 +1,5 @@
 <?php
-
+use yii\helpers\Html;
 $totalPrice = 0;
 
 foreach( $orders as $order )
@@ -19,3 +19,9 @@ foreach( $orders as $order )
 }
 echo "Итого: ".$totalPrice. " грн";
 ?>
+<p style="margin:0 auto;">
+    <?= Html::a('Подтвердить заказ', ['orders/confirm',[
+        'data-method' => 'post',
+        'class'       => 'btn btn-info',
+    ]]); ?>
+</p>

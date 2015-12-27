@@ -22,10 +22,18 @@ use yii\helpers\Html;
             <?= $model->price; ?> грн
         </p>
 
-        <p class="text-center">Количество:
-            <?= $model->quantity; ?> шт.
+        <p class="text-center">Наличие:
+            <?php if( $model->quantity > 10 )
+            {
+                echo "Есть в наличии";
+            } elseif( $model->quantity > 0 && $model->quantity <= 10 )
+            {
+                echo "Товар заканчивается";
+            } else
+            {
+                echo "Нет в наличии";
+            } ?>
         </p>
-
 
 
         <p class="text-center" style="margin:0 auto;">

@@ -26,6 +26,8 @@ use yii\helpers\Html;
             <?= $model->quantity; ?> шт.
         </p>
 
+
+
         <p class="text-center" style="margin:0 auto;">
             <?= Html::a('Подробнее', ['products/item', 'id' => $model->id], [
                 'data-method' => 'post',

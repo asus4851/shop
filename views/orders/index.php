@@ -28,8 +28,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'id',
             'user.username',
             'user.email',
-            'products.name',
-            'products.price',
+            'product.name',
+            'product.price',
             'quantity',
             'status',
 

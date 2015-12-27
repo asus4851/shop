@@ -18,6 +18,7 @@ class Orders extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
+
     public static function tableName()
     {
         return 'orders';
@@ -52,7 +53,7 @@ class Orders extends \yii\db\ActiveRecord
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
 
-    public function getProducts()
+    public function getProduct()
     {
         return $this->hasOne(Products::className(), ['id' => 'product_id']);
     }

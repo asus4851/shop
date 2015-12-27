@@ -107,12 +107,12 @@ class OrdersController extends Controller
     {
         $user_id = Yii::$app->user->identity->id;
 
-        $model = Orders::find()
+        $orders = Orders::find()
             ->where(['user_id' => $user_id])
             ->all();
 
         return $this->render('cart', [
-            'model' => $model,
+            'orders' => $orders,
         ]);
 
     }

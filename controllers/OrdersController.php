@@ -90,11 +90,31 @@ class OrdersController extends Controller
     {
         if( isset($_GET['user_id']) && isset($_GET['product_id']) )
         {
+            $price    = (int)$_GET['price'];
+            $quantity = (int)$_GET['quantity'];
+            $summ     = $price * $quantity;
+            if( $_GET['type'] == 'hot' )
+            {
+                if( $quantity >= 1 && $quantity <= 5 )
+                {
+
+                    $summ = $summ - ($price * $quantity * 0.03);
+                } elseif( $quantity >= 6 && $quantity <= 10 )
+                {
+                    $summ = $summ - ($price * $quantity * 0.07);
+                } elseif( $quantity > 10 )
+                {
+                    $summ = $summ - ($price * $quantity * 0.1);
+                }
+            }
+
             $model             = new Orders();
-            $model->user_id    = $_GET['user_id'];
-            $model->product_id = $_GET['product_id'];
-            $model->quantity   = 1; // Доработать момент передачи выбранного количества
+            $model->user_id    = (int)$_GET['user_id'];
+            $model->product_id = (int)$_GET['product_id'];
+            $model->quantity   = $quantity; // Доработать момент передачи выбранного количества
             $model->confirm    = "no";
+            $model->type       = $_GET['type'];
+            $model->price      = $summ;
             $model->save();
 
             $this->redirect('cart');
@@ -109,12 +129,13 @@ class OrdersController extends Controller
         $user_id = Yii::$app->user->identity->id;
 
         Yii::$app->db->createCommand()
-            ->update(Orders::tableName(), ['confirm' => 'yes'],['user_id' => $user_id, 'confirm' => 'no'])
+            ->update(Orders::tableName(), ['confirm' => 'yes'], ['user_id' => $user_id, 'confirm' => 'no'])
             ->execute();
         Yii::$app->controller->redirect('wait');
     }
 
-    public function actionWait(){
+    public function actionWait()
+    {
         echo "Ваш заказ принят, ожидайте звонка менеджера";
         echo "<br>";
         echo "<a href='/' class='btn btn-success'>Вернуться на главную страницу</a>";

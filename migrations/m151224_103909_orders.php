@@ -15,6 +15,8 @@ class m151224_103909_orders extends Migration
             'product_id' => $this->integer(5)->notNull(),
             'quantity'   => $this->integer(5)->notNull()->defaultValue(0),
             'status'     => $this->string(255)->notNull(),
+            'type'     => $this->string(255)->notNull(),
+            'price'     => $this->integer(5)->notNull(),
             'confirm'    => $this->string(255)->notNull(),
         ]);
 

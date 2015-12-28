@@ -15,7 +15,7 @@ use yii\helpers\Html;
         </p>
 
         <?php $type = ($model->type == 'usual') ? 'hide' : 'show'; ?>
-        <p class="text-center <?= $type ?>" style="color:red"> Тип:
+        <p class=" <?= $type ?>" style="color:red"> Тип:
             <?= $model->type; ?>
         </p>
 
@@ -36,14 +36,26 @@ use yii\helpers\Html;
             } ?>
         </p>
 
-        <p style="margin:0 auto;">
-            <?= Html::a('Добавить в корзину', ['orders/order', 'user_id' => Yii::$app->user->identity->id,
-                                               'product_id'              => $model->id], [
-                'data-method' => 'post',
-                'class'       => 'btn btn-info',
-            ]) ?>
-        </p>
+        <form method="get" action="<?= Yii::getAlias('@web') ?>/orders/order">
+            <input class="hide" type="text" name="user_id" value="<?= Yii::$app->user->identity->id; ?>">
+            <input class="hide" type="text" name="product_id" value="<?= $model->id; ?>">
+            <input class="hide" type="text" name="type" value="<?= $model->type; ?>">
+            <input class="hide" type="text" name="price" value="<?= $model->price; ?>">
+            <input class="" type="text" name="quantity" value="1">
+            <button type="submit" class="btn btn-success">Добавить в корзину</button>
+        </form>
+        <?php
+        if($model->type == 'hot')
+        {
+            echo '<p>В нашем магазине на этот товар действует оптовая скидка!</p>';
 
+            echo '<p>При покупке от 1 до 5 товаров (включительно) - 3%</p>';
+
+            echo '<p>При покупке от 6 до 10 товаров (включительно) - 7%</p>';
+
+            echo '<p>При покупке от 10 и более - 10%</p>';
+        }
+        ?>
     </div>
     <div class="col-md-12" style="padding-top:20px;">
         <p class="text-center">

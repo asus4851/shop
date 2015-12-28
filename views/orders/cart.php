@@ -16,10 +16,10 @@ if( count($orders) >= 1 )
             echo "<br>";
             echo "Количество " . $order->quantity;
             echo "<br>";
-            echo "Стоимость " . ($order->product->price * $order->quantity) . " грн";
+            echo "Стоимость " . ($order->price) . " грн";
             echo "<br>";
             echo "<hr>";
-            $totalPrice += ($order->product->price * $order->quantity);
+            $totalPrice += ($order->price);
         }
     }
     if($totalPrice !== 0)

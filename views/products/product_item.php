@@ -6,7 +6,7 @@ use yii\helpers\Html;
 ?>
 <div class="col-md-12">
     <div class="col-md-4">
-        <img src="<?= $model->thumbnail; ?>" width="100%" height="200px">
+        <img src="<?= $model->photo; ?>" width="100%" height="200px">
     </div>
 
     <div class="col-md-8">

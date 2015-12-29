@@ -35,7 +35,7 @@ AppAsset::register($this);
     ]);
     $navItems = [
         ['label' => 'Home', 'url' => ['/site/index']],
-        ['label' => 'Products', 'url' => ['/products/shop']],
+        ['label' => 'Shop', 'url' => ['/products/shop']],
         ['label' => 'Cart', 'url' => ['/orders/cart']],
 
     ];
@@ -50,6 +50,16 @@ AppAsset::register($this);
                                'linkOptions' => ['data-method' => 'post']]
         );
     }
+
+    if( isset(Yii::$app->user->identity->isAdmin) )
+    {
+        if( Yii::$app->user->identity->isAdmin == true )
+        {
+            array_push($navItems, ['label' => 'products(admin)', 'url' => ['/products']], ['label' => 'orders(admin)',
+                                                                                           'url'   => ['/orders']]);
+        }
+    }
+
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items'   => $navItems,

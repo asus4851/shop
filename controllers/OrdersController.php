@@ -45,13 +45,19 @@ class OrdersController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel  = new OrdersSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        if( Yii::$app->user->identity->isAdmin == true )
+        {
+            $searchModel  = new OrdersSearch();
+            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        return $this->render('index', [
-            'searchModel'  => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+            return $this->render('index', [
+                'searchModel'  => $searchModel,
+                'dataProvider' => $dataProvider,
+            ]);
+        } else
+        {
+            echo "У Вас не хватает прав для просмотра этой страницы";
+        }
     }
 
     /**
@@ -73,16 +79,22 @@ class OrdersController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Orders();
-
-        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        if( Yii::$app->user->identity->isAdmin == true )
         {
-            return $this->redirect(['view', 'id' => $model->id]);
+            $model = new Orders();
+
+            if( $model->load(Yii::$app->request->post()) && $model->save() )
+            {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else
+            {
+                return $this->render('create', [
+                    'model' => $model,
+                ]);
+            }
         } else
         {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+            echo "У Вас не хватает прав для просмотра этой страницы";
         }
     }
 
@@ -115,6 +127,7 @@ class OrdersController extends Controller
             $model->confirm    = "no";
             $model->type       = $_GET['type'];
             $model->price      = $summ;
+            $model->status     = 'not confirmed';
             $model->save();
 
             $this->redirect('cart');
@@ -163,16 +176,22 @@ class OrdersController extends Controller
      */
     public function actionUpdate( $id )
     {
-        $model = $this->findModel($id);
-
-        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        if( Yii::$app->user->identity->isAdmin == true )
         {
-            return $this->redirect(['view', 'id' => $model->id]);
+            $model = $this->findModel($id);
+
+            if( $model->load(Yii::$app->request->post()) && $model->save() )
+            {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else
+            {
+                return $this->render('update', [
+                    'model' => $model,
+                ]);
+            }
         } else
         {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
+            echo "У Вас не хватает прав для просмотра этой страницы";
         }
     }
 
@@ -184,9 +203,15 @@ class OrdersController extends Controller
      */
     public function actionDelete( $id )
     {
-        $this->findModel($id)->delete();
+        if( Yii::$app->user->identity->isAdmin == true )
+        {
+            $this->findModel($id)->delete();
 
-        return $this->redirect(['index']);
+            return $this->redirect(['index']);
+        } else
+        {
+            echo "У Вас не хватает прав для просмотра этой страницы";
+        }
     }
 
     /**

@@ -18,7 +18,13 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'quantity')->textInput() ?>
 
-    <?= $form->field($model, 'status')->dropDownList(['yes', 'no',]) ?>
+    <?= $form->field($model, 'type')->textInput() ?>
+
+    <?= $form->field($model, 'price')->textInput() ?>
+
+    <?= $form->field($model, 'confirm')->textInput() ?>
+
+    <?= $form->field($model, 'status')->textInput() ?>
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

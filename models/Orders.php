@@ -31,7 +31,8 @@ class Orders extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'product_id'], 'required'],
-            [['user_id', 'product_id', 'quantity'], 'integer'],
+            [['user_id', 'product_id', 'quantity', 'price'], 'integer'],
+            [['status', 'type', 'confirm'], 'string', 'max' => 255],
         ];
     }
 
@@ -45,8 +46,14 @@ class Orders extends \yii\db\ActiveRecord
             'user_id'    => 'User ID',
             'product_id' => 'Product ID',
             'quantity'   => 'Quantity',
+            'status'     => 'status',
+            'type'       => 'type',
+            'confirm'    => 'confirm',
+            'price'      => 'price',
+
         ];
     }
+
 
     public function getUser()
     {

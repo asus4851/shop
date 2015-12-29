@@ -13,8 +13,8 @@ use yii\helpers\Html;
             <?= $model->description; ?>
         </p>
 
-        <?php $type = ($model->type == 'usual') ? 'hide' : 'show'; ?>
-        <p class="text-center <?= $type ?>" style="color:red"> Тип:
+        <?php $type = ($model->type == 'usual') ? 'white' : 'red'; ?>
+        <p class="text-center" style="color:<?= $type; ?>"> Тип:
             <?= $model->type; ?>
         </p>
 

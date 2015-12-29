@@ -42,13 +42,16 @@ class ProductsController extends Controller
         ];
     }
 
-    public function beforeAction( $action )
-    {
-        if( Yii::$app->user->identity->isAdmin === false )
-            throw new ForbiddenHttpException("Permission denied");
-
-        return true;
-    }
+//    public function beforeAction( $action )
+//    {
+//        if( $action === 'products/create' )
+//        {
+//            if( Yii::$app->user->identity->isAdmin === false )
+//                throw new ForbiddenHttpException("Permission denied");
+//        }
+//
+//        return true;
+//    }
 
     /**
      * Lists all Products models.
@@ -56,13 +59,18 @@ class ProductsController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel  = new ProductsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        if( Yii::$app->user->identity->isAdmin === true )
+        {
+            $searchModel  = new ProductsSearch();
+            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        return $this->render('index', [
-            'searchModel'  => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+            return $this->render('index', [
+                'searchModel'  => $searchModel,
+                'dataProvider' => $dataProvider,
+            ]);
+        } else{
+            throw new ForbiddenHttpException("Permission denied");
+        }
     }
 
     public function actionShop()
@@ -102,19 +110,19 @@ class ProductsController extends Controller
      */
     const IMAGE_WIDTH = 300;
 
-    private function saveModel($model)
+    private function saveModel( $model )
     {
         $model->date = date('Y-m-d');
 
         $imageName = date('Y-m-d h:m:s'); //использую дату как уникальное имя картинки
         strval($imageName);
-        $imageName = str_replace([' ',':'], '-', $imageName).rand(0,10000000);
+        $imageName    = str_replace([' ', ':'], '-', $imageName) . rand(0, 10000000);
         $model->photo = UploadedFile::getInstance($model, 'photo');
 
         $fullName = Yii::getAlias('@webroot') . '/photos/' . $imageName . '.' . $model->photo->extension;
         $model->photo->saveAs($fullName);
 
-        $img      = Image::getImagine()->open($fullName);
+        $img = Image::getImagine()->open($fullName);
 
         $size  = $img->getSize();
         $ratio = $size->getWidth() / $size->getHeight();
@@ -128,21 +136,27 @@ class ProductsController extends Controller
         $model->thumbnail = '/thumbnails/' . $imageName . '.' . $model->photo->extension;
         $model->photo     = '/photos/' . $imageName . '.' . $model->photo->extension;
         $model->save();
+
         return true;
     }
 
     public function actionCreate()
     {
-        $model = new Products();
+        if( Yii::$app->user->identity->isAdmin === true )
+        {
+            $model = new Products();
 
-        if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
-        {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else
-        {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+            if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
+            {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else
+            {
+                return $this->render('create', [
+                    'model' => $model,
+                ]);
+            }
+        } else{
+            throw new ForbiddenHttpException("Permission denied");
         }
     }
 
@@ -154,16 +168,21 @@ class ProductsController extends Controller
      */
     public function actionUpdate( $id )
     {
-        $model = $this->findModel($id);
+        if( Yii::$app->user->identity->isAdmin === true )
+        {
+            $model = $this->findModel($id);
 
-        if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
-        {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else
-        {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
+            if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
+            {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else
+            {
+                return $this->render('update', [
+                    'model' => $model,
+                ]);
+            }
+        } else{
+            throw new ForbiddenHttpException("Permission denied");
         }
     }
 
@@ -175,10 +194,14 @@ class ProductsController extends Controller
      */
     public function actionDelete( $id )
     {
+        if( Yii::$app->user->identity->isAdmin === true )
+        {
+            $this->findModel($id)->delete();
 
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+            return $this->redirect(['index']);
+        } else{
+            throw new ForbiddenHttpException("Permission denied");
+        }
     }
 
     /**

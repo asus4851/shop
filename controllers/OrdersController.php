@@ -45,23 +45,33 @@ class OrdersController extends Controller
      * @return mixed
      */
 
-    public function beforeAction( $action )
-    {
-        if( Yii::$app->user->identity->isAdmin === false )
-            throw new ForbiddenHttpException("Permission denied");
-
-        return true;
-    }
+//    public function beforeAction( $action )
+//    {
+//        if( $action == 'index' || $action == 'create' || $action == 'delete' )
+//        {
+//            if( Yii::$app->user->identity->isAdmin === false )
+//                throw new ForbiddenHttpException("Permission denied");
+//        }
+//
+//        return true;
+// в последнюю минуту заметил что не доработал екшн и не успел
+//    }
 
     public function actionIndex()
     {
-        $searchModel  = new OrdersSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        if( Yii::$app->user->identity->isAdmin === true )
+        {
+            $searchModel  = new OrdersSearch();
+            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        return $this->render('index', [
-            'searchModel'  => $searchModel,
-            'dataProvider' => $dataProvider,
-        ]);
+            return $this->render('index', [
+                'searchModel'  => $searchModel,
+                'dataProvider' => $dataProvider,
+            ]);
+        }
+        else{
+            throw new ForbiddenHttpException("Permission denied");
+        }
 
     }
 
@@ -84,16 +94,21 @@ class OrdersController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Orders();
+        if( Yii::$app->user->identity->isAdmin === true )
+        {
+            $model = new Orders();
 
-        if( $model->load(Yii::$app->request->post()) && $model->save() )
-        {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else
-        {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+            if( $model->load(Yii::$app->request->post()) && $model->save() )
+            {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else
+            {
+                return $this->render('create', [
+                    'model' => $model,
+                ]);
+            }
+        } else{
+            throw new ForbiddenHttpException("Permission denied");
         }
 
     }
@@ -107,6 +122,14 @@ class OrdersController extends Controller
         $this->redirect('/orders/cart');
     }
 
+    public function actionStat()
+    {
+        $orders = Orders::find()->all();
+
+        return $this->render('stat', [
+            'orders' => $orders,
+        ]);
+    }
 
     public function actionOrder()
     {
@@ -114,13 +137,15 @@ class OrdersController extends Controller
         {
             $price    = (int)$_GET['price'];
             $quantity = (int)$_GET['quantity'];
-            if($quantity<1){
+            if( $quantity < 1 )
+            {
                 $quantity = 1;
             }
-            if($quantity>100){
+            if( $quantity > 100 )
+            {
                 $quantity = 100;
             }
-            $summ     = $price * $quantity;
+            $summ = $price * $quantity;
             if( $_GET['type'] == 'hot' )
             {
                 if( $quantity >= 1 && $quantity <= 5 )
@@ -194,17 +219,21 @@ class OrdersController extends Controller
      */
     public function actionUpdate( $id )
     {
-
-        $model = $this->findModel($id);
-
-        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        if( Yii::$app->user->identity->isAdmin === true )
         {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else
-        {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
+            $model = $this->findModel($id);
+
+            if( $model->load(Yii::$app->request->post()) && $model->save() )
+            {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else
+            {
+                return $this->render('update', [
+                    'model' => $model,
+                ]);
+            }
+        }else{
+            throw new ForbiddenHttpException("Permission denied");
         }
 
     }
@@ -217,10 +246,14 @@ class OrdersController extends Controller
      */
     public function actionDelete( $id )
     {
+        if( Yii::$app->user->identity->isAdmin === true )
+        {
+            $this->findModel($id)->delete();
 
-        $this->findModel($id)->delete();
-
-        return $this->redirect(['index']);
+            return $this->redirect(['index']);
+        } else{
+            throw new ForbiddenHttpException("Permission denied");
+        }
 
     }
 

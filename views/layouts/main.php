@@ -55,8 +55,10 @@ AppAsset::register($this);
     {
         if( Yii::$app->user->identity->isAdmin == true )
         {
-            array_push($navItems, ['label' => 'products(admin)', 'url' => ['/products']], ['label' => 'orders(admin)',
-                                                                                           'url'   => ['/orders']]);
+            array_push($navItems,
+                ['label' => 'products(admin)', 'url' => ['/products']],
+                ['label' => 'orders(admin)', 'url'   => ['/orders']],
+                ['label' => 'statistic(admin)', 'url'   => ['/orders/stat']]);
         }
     }
 

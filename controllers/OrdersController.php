@@ -98,6 +98,16 @@ class OrdersController extends Controller
 
     }
 
+    public function actionDel()
+    {
+
+        $id = $_GET['id'];
+
+        $this->findModel($id)->delete();
+        $this->redirect('/orders/cart');
+    }
+
+
     public function actionOrder()
     {
         if( isset($_GET['user_id']) && isset($_GET['product_id']) )

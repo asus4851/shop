@@ -100,6 +100,7 @@ class ProductsController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
+    const IMAGE_WIDTH = 300;
 
     private function saveModel($model)
     {
@@ -107,22 +108,20 @@ class ProductsController extends Controller
 
         $imageName = date('Y-m-d h:m:s'); //использую дату как уникальное имя картинки
         strval($imageName);
-        $imageName = str_replace(' ', '-', $imageName);
-        $imageName = str_replace(':', '-', $imageName);
-
+        $imageName = str_replace([' ',':'], '-', $imageName).rand(0,10000000);
         $model->photo = UploadedFile::getInstance($model, 'photo');
-        $model->photo->saveAs('photos/' . $imageName . '.' . $model->photo->extension);
 
         $fullName = Yii::getAlias('@webroot') . '/photos/' . $imageName . '.' . $model->photo->extension;
+        $model->photo->saveAs($fullName);
+
         $img      = Image::getImagine()->open($fullName);
 
         $size  = $img->getSize();
         $ratio = $size->getWidth() / $size->getHeight();
 
-        $width  = 300; //задаю на усмотрение качество
-        $height = round($width / $ratio);
+        $height = round(self::IMAGE_WIDTH / $ratio);
 
-        $box = new Box($width, $height);
+        $box = new Box(self::IMAGE_WIDTH, $height);
         $img->resize($box)->save(Yii::getAlias('@webroot') . '/thumbnails/' . $imageName . '.' . $model->photo->extension);
 
 

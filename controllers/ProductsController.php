@@ -9,6 +9,7 @@ use app\models\ProductsSearch;
 use yii\filters\AccessControl;
 use yii\imagine\Image;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
@@ -41,22 +42,27 @@ class ProductsController extends Controller
         ];
     }
 
+    public function beforeAction( $action )
+    {
+        if( Yii::$app->user->identity->isAdmin === false )
+            throw new ForbiddenHttpException("Permission denied");
+
+        return true;
+    }
+
     /**
      * Lists all Products models.
      * @return mixed
      */
     public function actionIndex()
     {
-        if( Yii::$app->user->identity->isAdmin == true )
-        {
-            $searchModel  = new ProductsSearch();
-            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $searchModel  = new ProductsSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-            return $this->render('index', [
-                'searchModel'  => $searchModel,
-                'dataProvider' => $dataProvider,
-            ]);
-        }
+        return $this->render('index', [
+            'searchModel'  => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     public function actionShop()
@@ -95,48 +101,49 @@ class ProductsController extends Controller
      * @return mixed
      */
 
+    private function saveModel($model)
+    {
+        $model->date = date('Y-m-d');
+
+        $imageName = date('Y-m-d h:m:s'); //использую дату как уникальное имя картинки
+        strval($imageName);
+        $imageName = str_replace(' ', '-', $imageName);
+        $imageName = str_replace(':', '-', $imageName);
+
+        $model->photo = UploadedFile::getInstance($model, 'photo');
+        $model->photo->saveAs('photos/' . $imageName . '.' . $model->photo->extension);
+
+        $fullName = Yii::getAlias('@webroot') . '/photos/' . $imageName . '.' . $model->photo->extension;
+        $img      = Image::getImagine()->open($fullName);
+
+        $size  = $img->getSize();
+        $ratio = $size->getWidth() / $size->getHeight();
+
+        $width  = 300; //задаю на усмотрение качество
+        $height = round($width / $ratio);
+
+        $box = new Box($width, $height);
+        $img->resize($box)->save(Yii::getAlias('@webroot') . '/thumbnails/' . $imageName . '.' . $model->photo->extension);
+
+
+        $model->thumbnail = '/thumbnails/' . $imageName . '.' . $model->photo->extension;
+        $model->photo     = '/photos/' . $imageName . '.' . $model->photo->extension;
+        $model->save();
+        return true;
+    }
+
     public function actionCreate()
     {
-        if( Yii::$app->user->identity->isAdmin == true )
+        $model = new Products();
+
+        if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
         {
-            $model = new Products();
-
-            if( $model->load(Yii::$app->request->post()) )
-            {
-                $model->date = date('Y-m-d');
-
-                $imageName = date('Y-m-d h:m:s'); //использую дату как уникальное имя картинки
-                strval($imageName);
-                $imageName = str_replace(' ', '-', $imageName);
-                $imageName = str_replace(':', '-', $imageName);
-
-                $model->photo = UploadedFile::getInstance($model, 'photo');
-                $model->photo->saveAs('photos/' . $imageName . '.' . $model->photo->extension);
-
-                $fullName = Yii::getAlias('@webroot') . '/photos/' . $imageName . '.' . $model->photo->extension;
-                $img      = Image::getImagine()->open($fullName);
-
-                $size  = $img->getSize();
-                $ratio = $size->getWidth() / $size->getHeight();
-
-                $width  = 300; //задаю на усмотрение качество
-                $height = round($width / $ratio);
-
-                $box = new Box($width, $height);
-                $img->resize($box)->save(Yii::getAlias('@webroot') . '/thumbnails/' . $imageName . '.' . $model->photo->extension);
-
-
-                $model->thumbnail = '/thumbnails/' . $imageName . '.' . $model->photo->extension;
-                $model->photo     = '/photos/' . $imageName . '.' . $model->photo->extension;
-                $model->save();
-
-                return $this->redirect(['view', 'id' => $model->id]);
-            } else
-            {
-                return $this->render('create', [
-                    'model' => $model,
-                ]);
-            }
+            return $this->redirect(['view', 'id' => $model->id]);
+        } else
+        {
+            return $this->render('create', [
+                'model' => $model,
+            ]);
         }
     }
 
@@ -148,46 +155,16 @@ class ProductsController extends Controller
      */
     public function actionUpdate( $id )
     {
-        if( Yii::$app->user->identity->isAdmin == true )
+        $model = $this->findModel($id);
+
+        if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
         {
-            $model = $this->findModel($id);
-
-            if( $model->load(Yii::$app->request->post()) )
-            {
-                $model->date = date('Y-m-d');
-
-                $imageName = date('Y-m-d h:m:s'); //использую дату как уникальное имя картинки
-                strval($imageName);
-                $imageName = str_replace(' ', '-', $imageName);
-                $imageName = str_replace(':', '-', $imageName);
-
-                $model->photo = UploadedFile::getInstance($model, 'photo');
-                $model->photo->saveAs('photos/' . $imageName . '.' . $model->photo->extension);
-
-                $fullName = Yii::getAlias('@webroot') . '/photos/' . $imageName . '.' . $model->photo->extension;
-                $img      = Image::getImagine()->open($fullName);
-
-                $size  = $img->getSize();
-                $ratio = $size->getWidth() / $size->getHeight();
-
-                $width  = 300; //задаю на усмотрение качество
-                $height = round($width / $ratio);
-
-                $box = new Box($width, $height);
-                $img->resize($box)->save(Yii::getAlias('@webroot') . '/thumbnails/' . $imageName . '.' . $model->photo->extension);
-
-
-                $model->thumbnail = '/thumbnails/' . $imageName . '.' . $model->photo->extension;
-                $model->photo     = '/photos/' . $imageName . '.' . $model->photo->extension;
-                $model->save();
-
-                return $this->redirect(['view', 'id' => $model->id]);
-            } else
-            {
-                return $this->render('update', [
-                    'model' => $model,
-                ]);
-            }
+            return $this->redirect(['view', 'id' => $model->id]);
+        } else
+        {
+            return $this->render('update', [
+                'model' => $model,
+            ]);
         }
     }
 
@@ -199,12 +176,10 @@ class ProductsController extends Controller
      */
     public function actionDelete( $id )
     {
-        if( Yii::$app->user->identity->isAdmin == true )
-        {
-            $this->findModel($id)->delete();
 
-            return $this->redirect(['index']);
-        }
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
     }
 
     /**

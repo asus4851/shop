@@ -8,6 +8,7 @@ use app\models\OrdersSearch;
 use yii\db\Query;
 use yii\filters\AccessControl;
 use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -43,21 +44,25 @@ class OrdersController extends Controller
      * Lists all Orders models.
      * @return mixed
      */
+
+    public function beforeAction( $action )
+    {
+        if( Yii::$app->user->identity->isAdmin === false )
+            throw new ForbiddenHttpException("Permission denied");
+
+        return true;
+    }
+
     public function actionIndex()
     {
-        if( Yii::$app->user->identity->isAdmin == true )
-        {
-            $searchModel  = new OrdersSearch();
-            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $searchModel  = new OrdersSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-            return $this->render('index', [
-                'searchModel'  => $searchModel,
-                'dataProvider' => $dataProvider,
-            ]);
-        } else
-        {
-            echo "У Вас не хватает прав для просмотра этой страницы";
-        }
+        return $this->render('index', [
+            'searchModel'  => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+
     }
 
     /**
@@ -79,23 +84,18 @@ class OrdersController extends Controller
      */
     public function actionCreate()
     {
-        if( Yii::$app->user->identity->isAdmin == true )
-        {
-            $model = new Orders();
+        $model = new Orders();
 
-            if( $model->load(Yii::$app->request->post()) && $model->save() )
-            {
-                return $this->redirect(['view', 'id' => $model->id]);
-            } else
-            {
-                return $this->render('create', [
-                    'model' => $model,
-                ]);
-            }
+        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
+            return $this->redirect(['view', 'id' => $model->id]);
         } else
         {
-            echo "У Вас не хватает прав для просмотра этой страницы";
+            return $this->render('create', [
+                'model' => $model,
+            ]);
         }
+
     }
 
     public function actionOrder()
@@ -125,10 +125,12 @@ class OrdersController extends Controller
             $model->product_id = (int)$_GET['product_id'];
             $model->quantity   = $quantity; // Доработать момент передачи выбранного количества
             $model->confirm    = "no";
-            $model->type       = $_GET['type'];
-            $model->price      = $summ;
+            $model->type       = (string)$_GET['type'];
+            $model->price      = round($summ);
             $model->status     = 'not confirmed';
+
             $model->save();
+
 
             $this->redirect('cart');
         } else
@@ -176,23 +178,19 @@ class OrdersController extends Controller
      */
     public function actionUpdate( $id )
     {
-        if( Yii::$app->user->identity->isAdmin == true )
-        {
-            $model = $this->findModel($id);
 
-            if( $model->load(Yii::$app->request->post()) && $model->save() )
-            {
-                return $this->redirect(['view', 'id' => $model->id]);
-            } else
-            {
-                return $this->render('update', [
-                    'model' => $model,
-                ]);
-            }
+        $model = $this->findModel($id);
+
+        if( $model->load(Yii::$app->request->post()) && $model->save() )
+        {
+            return $this->redirect(['view', 'id' => $model->id]);
         } else
         {
-            echo "У Вас не хватает прав для просмотра этой страницы";
+            return $this->render('update', [
+                'model' => $model,
+            ]);
         }
+
     }
 
     /**
@@ -203,15 +201,11 @@ class OrdersController extends Controller
      */
     public function actionDelete( $id )
     {
-        if( Yii::$app->user->identity->isAdmin == true )
-        {
-            $this->findModel($id)->delete();
 
-            return $this->redirect(['index']);
-        } else
-        {
-            echo "У Вас не хватает прав для просмотра этой страницы";
-        }
+        $this->findModel($id)->delete();
+
+        return $this->redirect(['index']);
+
     }
 
     /**

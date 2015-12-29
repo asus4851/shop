@@ -114,6 +114,12 @@ class OrdersController extends Controller
         {
             $price    = (int)$_GET['price'];
             $quantity = (int)$_GET['quantity'];
+            if($quantity<1){
+                $quantity = 1;
+            }
+            if($quantity>100){
+                $quantity = 100;
+            }
             $summ     = $price * $quantity;
             if( $_GET['type'] == 'hot' )
             {

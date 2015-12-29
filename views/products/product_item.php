@@ -35,6 +35,7 @@ use yii\helpers\Html;
                 echo "Нет в наличии";
             } ?>
         </p>
+        Вы можете заказать от 1 до 100 товаров, если Вы введете больше чем 100 то автоматов будет присовено 100, если меньше одного - то 1
 
         <form method="get" action="<?= Yii::getAlias('@web') ?>/orders/order">
             <input class="hide" type="text" name="user_id" value="<?= Yii::$app->user->identity->id; ?>">

@@ -13,6 +13,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
+use yii\widgets\Pjax;
 
 /**
  * ProductsController implements the CRUD actions for Products model.
@@ -42,16 +43,16 @@ class ProductsController extends Controller
         ];
     }
 
-//    public function beforeAction( $action )
-//    {
-//        if( $action === 'products/create' )
-//        {
-//            if( Yii::$app->user->identity->isAdmin === false )
-//                throw new ForbiddenHttpException("Permission denied");
-//        }
-//
-//        return true;
-//    }
+    //    public function beforeAction( $action )
+    //    {
+    //        if( $action === 'products/create' )
+    //        {
+    //            if( Yii::$app->user->identity->isAdmin === false )
+    //                throw new ForbiddenHttpException("Permission denied");
+    //        }
+    //
+    //        return true;
+    //    }
 
     /**
      * Lists all Products models.
@@ -68,20 +69,23 @@ class ProductsController extends Controller
                 'searchModel'  => $searchModel,
                 'dataProvider' => $dataProvider,
             ]);
-        } else{
+        } else
+        {
             throw new ForbiddenHttpException("Permission denied");
         }
     }
 
     public function actionShop()
     {
+
         $searchModel  = new ProductsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-
+        
         return $this->render('shop', [
             'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
+
     }
 
     public function actionItem( $id )
@@ -155,7 +159,8 @@ class ProductsController extends Controller
                     'model' => $model,
                 ]);
             }
-        } else{
+        } else
+        {
             throw new ForbiddenHttpException("Permission denied");
         }
     }
@@ -181,7 +186,8 @@ class ProductsController extends Controller
                     'model' => $model,
                 ]);
             }
-        } else{
+        } else
+        {
             throw new ForbiddenHttpException("Permission denied");
         }
     }
@@ -199,7 +205,8 @@ class ProductsController extends Controller
             $this->findModel($id)->delete();
 
             return $this->redirect(['index']);
-        } else{
+        } else
+        {
             throw new ForbiddenHttpException("Permission denied");
         }
     }

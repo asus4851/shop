@@ -3,6 +3,7 @@
 /* @var $dataProvider yii\data\ActiveDataProvider */
 use yii\helpers\Html;
 use yii\widgets\ListView;
+use yii\widgets\Pjax;
 
 ?>
 <h1><?=Html::encode($this->title)?></h1>
@@ -14,3 +15,4 @@ use yii\widgets\ListView;
     'dataProvider' => $dataProvider,
     'itemView' => 'shop_item',
 ] ); ?>
+

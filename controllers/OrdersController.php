@@ -18,6 +18,13 @@ use yii\filters\VerbFilter;
  */
 class OrdersController extends Controller
 {
+    private $adminActions = [
+        'index',
+        'create',
+        'update',
+        'delete',
+    ];
+
     public function behaviors()
     {
         return [
@@ -41,54 +48,24 @@ class OrdersController extends Controller
         ];
     }
 
-    /**
-     * Lists all Orders models.
-     * @return mixed
-     */
+    public function beforeAction( $action )
+    {
+        if( in_array($action->id, $this->adminActions) && Yii::$app->user->identity->isAdmin === false )
+            throw new ForbiddenHttpException("Permission denied");
 
-    //    private function checkCurrContr()
-    //    {
-    //        return [
-    //            'index',
-    //            'create',
-    //            'update',
-    //            'delete',
-    //        ];
-    //    }
-    //
-    //
-    //    public function beforeAction( $action )
-    //    {
-    //        if( in_array($action->id, $this->checkCurrContr()) )
-    //        {
-    //            if( Yii::$app->user->identity->isAdmin )
-    //            {
-    //                return true;
-    //            } else
-    //            {
-    //                throw new ForbiddenHttpException("Permission denied");
-    //            }
-    //        }
-    //    }
+        return parent::beforeAction($action);
+    }
 
 
     public function actionIndex()
     {
+        $searchModel  = new OrdersSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
-            $searchModel  = new OrdersSearch();
-            $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-
-            return $this->render('index', [
-                'searchModel'  => $searchModel,
-                'dataProvider' => $dataProvider,
-            ]);
-        }
-        else{
-            throw new ForbiddenHttpException("Permission denied");
-        }
-
+        return $this->render('index', [
+            'searchModel'  => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     /**

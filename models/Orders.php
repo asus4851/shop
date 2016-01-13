@@ -67,19 +67,10 @@ class Orders extends \yii\db\ActiveRecord
      */
     public function getProducts()
     {
-        return $this->hasMany(Products::className(), ['id' => 'product_id'])
-            ->viaTable(self::PRODUCT_RELATIONS_TABLE, ['order_id' => 'id'])->all();
+        return $this->hasMany(Products::className(), ['id' => 'product_id']) // указываем что у нас будет связь id (Products) к product_id (таблица связи)
+            ->viaTable(self::PRODUCT_RELATIONS_TABLE, ['order_id' => 'id'])->all(); // через таблицу связи свзяь order_id (таблица связи) к orders
+        // в итоге получаем все продукты, при связи много продуктов в 1 заказе
     }
-
-//    public function getProductsIdByManager($id){ //относится к order/index (контроллер) не доработанный вариант но рабочий
-//        $rows = (new \yii\db\Query())
-//            ->select(['product_id'])
-//            ->from(self::PRODUCT_RELATIONS_TABLE)
-//            ->where(['order_id' => $id])
-//            ->all();
-//        return $rows;
-//    }
-
 
     public function getQuantity($productId = null)  // считаем количество
     {

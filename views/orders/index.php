@@ -1,5 +1,6 @@
 <?php
 
+use app\models\Orders;
 use yii\helpers\Html;
 use yii\grid\GridView;
 
@@ -29,12 +30,19 @@ $this->params['breadcrumbs'][] = $this->title;
             'user_id',
             'user.username',
             'user.email',
-            ////           [  // не успеваю нормально реализоват, по идее есть сырой вариант длявывода имени снизу
-            //            'attribute' => 'test',
-            //            'value' => function ($dataProvider) {
-            //                return $dataProvider->getProducts();
-            //            }
-            //        ],
+            [
+                'label' => 'Products',
+                'value' => function ( Orders $order ) // указывем что мы принимаем обьект класса Orders
+                {
+                    $products = $order->getProducts(); // получаем все продукты этого заказа
+                    $productList = [];
+                    foreach( $products as $product )
+                        $productList[]   = Html::a($product->name, ['/products/item/' . $product->id]) . ' x' . $order->getQuantity($product->id);
+
+                    return implode(', ', $productList); // возвраем строку вместо массива
+                },
+                'format' => 'html',
+            ],
             'quantity',
             'status',
             'confirm',
@@ -42,21 +50,5 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\ActionColumn'],
         ],
     ]); ?>
-    <?php // $model = $dataProvider->getModels();  // сырой вариант для вывода списка имен продуктов для каждого заказа в view
 
-//    $length = count($model);
-//    $order = new \app\models\Orders();
-//    $product = new \app\models\Products();
-//    for($i=0;$i<$length;$i++){
-//        $id = $model[$i]['id'];
-//        $array_products_id = $order -> getProductsIdByManager($id);
-//        $array_products_name = $product->getProductsNameByManager($array_products_id);
-//        echo "<pre>";
-//        echo "id заказа ".$id." и в нем храняться такие продукты с именем";
-//        print_r($array_products_name);
-//        echo "</pre>";
-
-   // }
-
-   // die; ?>
 </div>

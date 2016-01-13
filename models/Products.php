@@ -128,18 +128,4 @@ class Products extends \yii\db\ActiveRecord
             die('product model was not save');
         }
     }
-
-//    public function getProductsNameByManager($array_id){ //относится к order/index (контроллер)  не доработанный вариант но рабочий
-//        $productNames = [];
-//        foreach($array_id as $id)
-//        {
-//            foreach( $id as $item )
-//            {
-//
-//                $productItem= Products::findOne((int)$item);
-//                $productNames[] = $productItem->name;
-//            }
-//        }
-//        return $productNames;
-//    }
 }

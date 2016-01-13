@@ -1,5 +1,7 @@
 <?php
 
+use app\models\Products;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -17,11 +19,17 @@ use yii\widgets\ActiveForm;
 
     <?php //$form->field($model, 'id') ?>
 
-    <?= $form->field($model, 'name') ?>
+    <?= $form->field($model, 'name')->dropDownList(
+        ArrayHelper::map(Products::find()->all(), 'name', 'name'), $params = [
+        'prompt' => 'select value',
+    ]); ?>
 
     <?php // $form->field($model, 'description') ?>
 
-    <?= $form->field($model, 'type') ?>
+    <?= $form->field($model, 'type')->dropDownList(
+        ArrayHelper::map(Products::find()->all(), 'type', 'type'), $params = [
+        'prompt' => 'select value',
+    ]); ?>
 
     <?= $form->field($model, 'price') ?>
 

@@ -43,15 +43,29 @@ class ProductsController extends Controller
         ];
     }
 
+    //    private function checkCurrContr()
+    //    {
+    //        return [
+    //            'index',
+    //            'create',
+    //            'update',
+    //            'delete',
+    //        ];
+    //    }
+    //
+    //
     //    public function beforeAction( $action )
     //    {
-    //        if( $action === 'products/create' )
+    //        if( in_array($action->id, $this->checkCurrContr()) )
     //        {
-    //            if( Yii::$app->user->identity->isAdmin === false )
+    //            if( Yii::$app->user->identity->isAdmin )
+    //            {
+    //                return true;
+    //            } else
+    //            {
     //                throw new ForbiddenHttpException("Permission denied");
+    //            }
     //        }
-    //
-    //        return true;
     //    }
 
     /**
@@ -77,10 +91,9 @@ class ProductsController extends Controller
 
     public function actionShop()
     {
-
         $searchModel  = new ProductsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
-        
+
         return $this->render('shop', [
             'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
@@ -110,38 +123,12 @@ class ProductsController extends Controller
     /**
      * Creates a new Products model.
      * If creation is successful, the browser will be redirected to the 'view' page.
+     * @param Products $model
      * @return mixed
      */
-    const IMAGE_WIDTH = 300;
-
     private function saveModel( $model )
     {
-        $model->date = date('Y-m-d');
-
-        $imageName = date('Y-m-d h:m:s'); //использую дату как уникальное имя картинки
-        strval($imageName);
-        $imageName    = str_replace([' ', ':'], '-', $imageName) . rand(0, 10000000);
-        $model->photo = UploadedFile::getInstance($model, 'photo');
-
-        $fullName = Yii::getAlias('@webroot') . '/photos/' . $imageName . '.' . $model->photo->extension;
-        $model->photo->saveAs($fullName);
-
-        $img = Image::getImagine()->open($fullName);
-
-        $size  = $img->getSize();
-        $ratio = $size->getWidth() / $size->getHeight();
-
-        $height = round(self::IMAGE_WIDTH / $ratio);
-
-        $box = new Box(self::IMAGE_WIDTH, $height);
-        $img->resize($box)->save(Yii::getAlias('@webroot') . '/thumbnails/' . $imageName . '.' . $model->photo->extension);
-
-
-        $model->thumbnail = '/thumbnails/' . $imageName . '.' . $model->photo->extension;
-        $model->photo     = '/photos/' . $imageName . '.' . $model->photo->extension;
-        $model->save();
-
-        return true;
+      return Products::saveImage($model);
     }
 
     public function actionCreate()
@@ -170,6 +157,8 @@ class ProductsController extends Controller
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
      */
     public function actionUpdate( $id )
     {
@@ -197,14 +186,28 @@ class ProductsController extends Controller
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
+     * @throws \Exception
      */
     public function actionDelete( $id )
     {
         if( Yii::$app->user->identity->isAdmin === true )
         {
-            $this->findModel($id)->delete();
+            $photo           = $this->findModel($id)->photo; //получаю относительный путь картинки удаляемого продукта
+            $thumbnail       = $this->findModel($id)->thumbnail;
+            $deletePhoto     = unlink(Yii::getAlias('@webroot') . $photo);
+            $deleteThumbnail = unlink(Yii::getAlias('@webroot') . $thumbnail);
 
-            return $this->redirect(['index']);
+            if( $deletePhoto === true && $deleteThumbnail === true ) // проверяю на успешность удаления
+            {
+                $this->findModel($id)->delete();
+
+                return $this->redirect(['index']);
+            } else
+            {
+                die('Не удалось подчистить картинки при удалении продукта');
+            }
         } else
         {
             throw new ForbiddenHttpException("Permission denied");

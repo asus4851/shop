@@ -1,59 +1,65 @@
 <?php
+/**
+* @var \app\models\Products[] $products
+* @var \app\models\Orders $order
+ */
 use yii\helpers\Html;
+use yii\widgets\ActiveForm;
 
-$totalPrice = 0;
-$count      = 0;
-if( count($orders) >= 1 )
-{
-    foreach( $orders as $order )
-    {
-        if( $order->confirm == 'no' )
-        {
-            echo '<img src="' . $order->product->photo . '" width="100" height="100"">';
-            echo "<br>";
-            echo 'Заказал пользователь ' . $order->user_id;
-            echo "<br>";
-            echo 'id заказанного товара ' . $order->product_id;
-            echo "<br>";
-            echo "Количество " . $order->quantity;
-            echo "<br>";
-            echo "Стоимость " . ($order->price) . " грн";
-            echo "<br>";
-
-            $totalPrice += ($order->price);
-            $count++;
-            ?>
-            <p style="margin:0 auto;">
-            <?= Html::a('Удалить', ['orders/del', 'id' => $order->id], [
-            'data-method' => 'post',
-            'class'       => 'btn btn-info',
-        ]) ?>
-            </p><?php
-            echo "<hr>";
-        }
-    }
-    if( $totalPrice !== 0 )
-    {
-        echo "Вы выбрали " . $count . " товаров";
-        echo "<br>";
-        echo "Итого: " . $totalPrice . " грн";
-
-        echo '<p style="margin:0 auto;">';
-        echo Html::a('Подтвердить заказ', ['orders/confirm', [
-            'data-method' => 'post',
-            'class'       => 'btn btn-info',
-        ]]);
-        echo '</p>';
-    } else
-    {
-        echo 'Вы подтвердили все свои предыдущие покупки, новых заказов не сделано, ожидайте звонка менеджера для уточнения заказа.
-        (Менеджер в это время переходит на екшн cart и после подтверждения меняет статус заказа, статистику можно брать с таблицы заказов)
-        ';
-    }
-} else
+if( count($products) == 0 )
 {
     echo 'Вы не выбрали товар, перейдите в <a href="/products/shop">магазин</a> и наслаждайтесь покупками';
     echo '<br>';
-
 }
+
+$productsCount = 0;
+foreach( $products as $product )
+{
+    $productQuantity = $order->getQuantity($product->id);
+    $productsCount += $productQuantity;
+
+    echo '<img src="' . $product->photo . '" width="100" height="100"">';
+    echo "<br>";
+    echo 'Заказал пользователь ' . $order->user_id;
+    echo "<br>";
+    echo 'id заказанного товара ' . $product->id;
+    echo "<br>";
+    echo "Количество " .$productQuantity;
+    echo "<br>";
+    echo "Стоимость " . $product->getFullPrice($productQuantity) . " грн";
+    echo "<br>";
+
+    ?>
+    <div style="margin:0 auto;">
+
+        <?php $form = ActiveForm::begin(['action' => ['orders/remove-products'], 'method' => 'post']); ?>
+
+        <?= Html::hiddenInput('order_id', $order->id) ?>
+        <?= Html::hiddenInput('product_id', $product->id) ?>
+
+        <div class="form-group">
+            <?= Html::submitButton('Удалить', ['class' => 'btn btn-danger']) ?>
+        </div>
+
+        <?php ActiveForm::end(); ?>
+
+    </div>
+    <hr>
+    <?php
+}
+
+if( empty($order) === false && $order->price !== 0 )
+{
+    echo "Вы выбрали " . $productsCount . " товаров";
+    echo "<br>";
+    echo "Итого: " . $order->price . " грн";
+
+    echo '<p style="margin:0 auto;">';
+    echo Html::a('Подтвердить заказ', ['orders/confirm', [
+        'data-method' => 'post',
+        'class'       => 'btn btn-info',
+    ]]);
+    echo '</p>';
+}
+
 ?>

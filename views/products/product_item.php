@@ -1,7 +1,9 @@
 <?php
-/* @var $searchModel ProductsSearch */
-/* @var $dataProvider yii\data\ActiveDataProvider */
+/* @var Products $model  */
+/* @var yii\data\ActiveDataProvider $dataProvider  */
+use app\models\Products;
 use yii\helpers\Html;
+use yii\widgets\ActiveForm;
 
 ?>
 <div class="col-md-12">
@@ -35,16 +37,22 @@ use yii\helpers\Html;
                 echo "Нет в наличии";
             } ?>
         </p>
-        Вы можете заказать от 1 до 100 товаров, если Вы введете больше чем 100 то автоматов будет присовено 100, если меньше одного - то 1
 
-        <form method="get" action="<?= Yii::getAlias('@web') ?>/orders/order">
-            <input class="hide" type="text" name="user_id" value="<?= Yii::$app->user->identity->id; ?>">
-            <input class="hide" type="text" name="product_id" value="<?= $model->id; ?>">
-            <input class="hide" type="text" name="type" value="<?= $model->type; ?>">
-            <input class="hide" type="text" name="price" value="<?= $model->price; ?>">
-            <input class="" type="text" name="quantity" value="1">
-            <button type="submit" class="btn btn-success">Добавить в корзину</button>
-        </form>
+        <?php $form = ActiveForm::begin([
+            'action' => [Yii::getAlias('@web')."/orders/add-products"],
+            'method' => 'post',
+        ]); ?>
+
+            <?= Html::hiddenInput('product_id', $model->id ) ?>
+
+            <?= Html::textInput('quantity', 1, ['type' => 'number', 'max' => 100, 'min' => 1] ) ?>
+
+            <div class="form-group">
+                <?= Html::submitButton('Add to cart', ['class' => 'btn btn-primary']) ?>
+            </div>
+
+        <?php ActiveForm::end(); ?>
+
         <?php
         if($model->type == 'hot')
         {

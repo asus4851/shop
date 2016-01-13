@@ -7,7 +7,7 @@ use yii\grid\GridView;
 /* @var $searchModel app\models\OrdersSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Orders';
+$this->title                   = 'Orders';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="orders-index">
@@ -21,19 +21,42 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        'filterModel' => $searchModel,
-        'columns' => [
+        'filterModel'  => $searchModel,
+        'columns'      => [
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
+            'user_id',
             'user.username',
             'user.email',
-            'product.name',
-            'product.price',
+            ////           [  // не успеваю нормально реализоват, по идее есть сырой вариант длявывода имени снизу
+            //            'attribute' => 'test',
+            //            'value' => function ($dataProvider) {
+            //                return $dataProvider->getProducts();
+            //            }
+            //        ],
             'quantity',
             'status',
+            'confirm',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],
     ]); ?>
+    <?php // $model = $dataProvider->getModels();  // сырой вариант для вывода списка имен продуктов для каждого заказа в view
+
+//    $length = count($model);
+//    $order = new \app\models\Orders();
+//    $product = new \app\models\Products();
+//    for($i=0;$i<$length;$i++){
+//        $id = $model[$i]['id'];
+//        $array_products_id = $order -> getProductsIdByManager($id);
+//        $array_products_name = $product->getProductsNameByManager($array_products_id);
+//        echo "<pre>";
+//        echo "id заказа ".$id." и в нем храняться такие продукты с именем";
+//        print_r($array_products_name);
+//        echo "</pre>";
+
+   // }
+
+   // die; ?>
 </div>

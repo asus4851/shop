@@ -18,7 +18,7 @@ class OrdersSearch extends Orders
     public function rules()
     {
         return [
-            [['id', 'user_id', 'product_id', 'quantity'], 'integer'],
+            [['id', 'user_id', 'quantity'], 'integer'],
         ];
     }
 
@@ -58,7 +58,7 @@ class OrdersSearch extends Orders
         $query->andFilterWhere([
             'id'         => $this->id,
             'user_id'    => $this->user_id,
-            'product_id' => $this->product_id,
+//            'product_id' => $this->product_id,
             'quantity'   => $this->quantity,
         ]);
 

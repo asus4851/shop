@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Products;
 use Yii;
 use app\models\Orders;
 use app\models\OrdersSearch;
@@ -45,20 +46,35 @@ class OrdersController extends Controller
      * @return mixed
      */
 
-//    public function beforeAction( $action )
-//    {
-//        if( $action == 'index' || $action == 'create' || $action == 'delete' )
-//        {
-//            if( Yii::$app->user->identity->isAdmin === false )
-//                throw new ForbiddenHttpException("Permission denied");
-//        }
-//
-//        return true;
-// в последнюю минуту заметил что не доработал екшн и не успел
-//    }
+    //    private function checkCurrContr()
+    //    {
+    //        return [
+    //            'index',
+    //            'create',
+    //            'update',
+    //            'delete',
+    //        ];
+    //    }
+    //
+    //
+    //    public function beforeAction( $action )
+    //    {
+    //        if( in_array($action->id, $this->checkCurrContr()) )
+    //        {
+    //            if( Yii::$app->user->identity->isAdmin )
+    //            {
+    //                return true;
+    //            } else
+    //            {
+    //                throw new ForbiddenHttpException("Permission denied");
+    //            }
+    //        }
+    //    }
+
 
     public function actionIndex()
     {
+
         if( Yii::$app->user->identity->isAdmin === true )
         {
             $searchModel  = new OrdersSearch();
@@ -113,15 +129,6 @@ class OrdersController extends Controller
 
     }
 
-    public function actionDel()
-    {
-
-        $id = $_GET['id'];
-
-        $this->findModel($id)->delete();
-        $this->redirect('/orders/cart');
-    }
-
     public function actionStat()
     {
         $orders = Orders::find()->all();
@@ -131,53 +138,82 @@ class OrdersController extends Controller
         ]);
     }
 
-    public function actionOrder()
+    public function actionAddProducts()
     {
-        if( isset($_GET['user_id']) && isset($_GET['product_id']) )
+        if(isset($_POST['product_id']))  // проверка на наличие id
         {
-            $price    = (int)$_GET['price'];
-            $quantity = (int)$_GET['quantity'];
-            if( $quantity < 1 )
-            {
-                $quantity = 1;
-            }
-            if( $quantity > 100 )
-            {
-                $quantity = 100;
-            }
-            $summ = $price * $quantity;
-            if( $_GET['type'] == 'hot' )
-            {
-                if( $quantity >= 1 && $quantity <= 5 )
-                {
-
-                    $summ = $summ - ($price * $quantity * 0.03);
-                } elseif( $quantity >= 6 && $quantity <= 10 )
-                {
-                    $summ = $summ - ($price * $quantity * 0.07);
-                } elseif( $quantity > 10 )
-                {
-                    $summ = $summ - ($price * $quantity * 0.1);
-                }
-            }
-
-            $model             = new Orders();
-            $model->user_id    = (int)$_GET['user_id'];
-            $model->product_id = (int)$_GET['product_id'];
-            $model->quantity   = $quantity; // Доработать момент передачи выбранного количества
-            $model->confirm    = "no";
-            $model->type       = (string)$_GET['type'];
-            $model->price      = round($summ);
-            $model->status     = 'not confirmed';
-
-            $model->save();
-
-
-            $this->redirect('cart');
-        } else
-        {
-            echo "Cannot find user_id or/and product_id in GET request";
+            $product = Products::findOne(['id' => (int)$_POST['product_id']]); // забираем продукт по id
+            if(empty($product)) // получили ли мы продукт
+                die('error on finding product'); // $this->redirect('/products/shop'); //error
         }
+
+        if(isset($_POST['quantity']) && $_POST['quantity'] > 0) // проверка
+            $quantity = $_POST['quantity'];
+        else
+            die('error with quantity'); // $this->redirect('/products/shop'); //error
+
+        if(empty(Yii::$app->user->identity->id))
+            die('error with user'); // $this->redirect('/products/shop'); //error
+
+        $order = Orders::findOne(['user_id' => Yii::$app->user->identity->id, 'confirm' => 0]); //найти не подтвержденный заказ
+        if(empty($order))
+        {
+            $order          = new Orders();
+            $order->user_id = Yii::$app->user->identity->id;
+            $order->status  = 0;
+            $order->confirm = 0;
+            $order->price   = 0;
+            $save = $order->save();
+            if($save === false)
+                die('error on creating order'); //$this->redirect('/products/shop'); //error
+        }
+
+        $orderProducts = $order->getProducts();  //получить список продуктов
+        $productIdList = []; //заносим в массив id
+        foreach($orderProducts as $orderProduct)
+        {
+            $productIdList[] = $orderProduct->id;
+        }
+
+        if(in_array($product->id, $productIdList))  //если продукт в массиве то обновляем данные, иначе добавляем
+            $add = $order->updateProducts($product->id, $quantity);
+        else
+            $add = $order->addProducts($product->id, $quantity);
+
+        if($add === false)
+            die('error on adding products to order'); //$this->redirect('/products/shop'); //error
+
+        $order->price = round($order->calculateGrandTotal()); //считаем полную стоимость заказа
+        if( $order->save() )
+            $this->redirect('cart'); //success
+        else
+            die('error on saving order'); //$this->redirect('/products/shop'); //error
+    }
+
+    public function actionRemoveProducts()
+    {
+        if(isset($_POST['order_id']))
+        {
+            $order = Orders::findOne(['id' => (int)$_POST['order_id']]);
+            if(empty($order)) //проверка на пустой заказ
+                die('error on finding order'); // $this->redirect('/products/shop'); //error
+        }
+
+        if(empty(Yii::$app->user->identity->id) || $order->user_id !== Yii::$app->user->identity->id) // проверка на
+        // пользователя и соответствия что пользователь хочет удалить именно свой заказ
+            die('error with order user'); // $this->redirect('/products/shop'); //error
+
+        if(isset($_POST['product_id']))  // проверка на продукт
+        {
+            $product = Products::findOne(['id' => (int)$_POST['product_id']]); //находим продукт с таблицы
+            if(empty($product))
+                die('error on finding product'); // $this->redirect('/products/shop'); //error
+        }
+
+        if($order->removeProducts($product->id)) // после проверок удаляем нужный продукт в заказе (функция в моделе заказа)
+            $this->redirect('cart'); //success
+        else
+            die('error on removing product from order'); //$this->redirect('/products/shop'); //error
     }
 
     public function actionConfirm()
@@ -185,12 +221,12 @@ class OrdersController extends Controller
         $user_id = Yii::$app->user->identity->id;
 
         Yii::$app->db->createCommand()
-            ->update(Orders::tableName(), ['confirm' => 'yes'], ['user_id' => $user_id, 'confirm' => 'no'])
-            ->execute();
+            ->update(Orders::tableName(), ['confirm' => 1], ['user_id' => $user_id, 'confirm' => 0])
+            ->execute(); //подтверждаем заказ в корзине
         Yii::$app->controller->redirect('wait');
     }
 
-    public function actionWait()
+    public function actionWait() // после нажатия подтверждения
     {
         echo "Ваш заказ принят, ожидайте звонка менеджера";
         echo "<br>";
@@ -201,12 +237,20 @@ class OrdersController extends Controller
     {
         $user_id = Yii::$app->user->identity->id;
 
-        $orders = Orders::find()
-            ->where(['user_id' => $user_id])
-            ->all();
+        /**
+         * @var Orders $order
+         */
+        $order = Orders::findOne([   //забираем 1 товар по user_id
+            'user_id' => $user_id,
+            'confirm' => 0, // не подтвержденный пользователем
+        ]);
+
+        $orderProducts = empty($order) ? [] : $order->getProducts(); // забираем все продукты
+        // пользователя по id Orders => order_id,
 
         return $this->render('cart', [
-            'orders' => $orders,
+            'products' => $orderProducts,
+            'order'    => $order,
         ]);
 
     }

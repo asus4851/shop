@@ -14,13 +14,13 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'user_id')->textInput() ?>
 
-    <?= $form->field($model, 'product_id')->textInput() ?>
+
 
     <?= $form->field($model, 'quantity')->textInput() ?>
 
-    <?= $form->field($model, 'type')->textInput() ?>
 
-    <?= $form->field($model, 'price')->textInput() ?>
+
+
 
     <?= $form->field($model, 'confirm')->textInput() ?>
 

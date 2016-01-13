@@ -4,21 +4,26 @@ namespace app\models;
 
 use dektrium\user\models\User;
 use Yii;
+use yii\db\Query;
 
 /**
  * This is the model class for table "orders".
  *
  * @property integer $id
  * @property integer $user_id
- * @property integer $product_id
- * @property integer $quantity
+ * @property integer $status
+ * @property integer $confirm
+ * @property integer $price
+ * @property User $user
+ * @property Products[] $products
  */
 class Orders extends \yii\db\ActiveRecord
 {
+    const PRODUCT_RELATIONS_TABLE = 'order_products';
+
     /**
      * @inheritdoc
      */
-
     public static function tableName()
     {
         return 'orders';
@@ -30,9 +35,8 @@ class Orders extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'product_id'], 'required'],
-            [['user_id', 'product_id', 'quantity', 'price'], 'integer'],
-            [['status', 'type', 'confirm'], 'string', 'max' => 255],
+            [['user_id'], 'required'],
+            [['user_id', 'price', 'status', 'confirm'], 'integer'],
         ];
     }
 
@@ -44,25 +48,95 @@ class Orders extends \yii\db\ActiveRecord
         return [
             'id'         => 'ID',
             'user_id'    => 'User ID',
-            'product_id' => 'Product ID',
-            'quantity'   => 'Quantity',
-            'status'     => 'status',
-            'type'       => 'type',
-            'confirm'    => 'confirm',
-            'price'      => 'price',
-
+            'status'     => 'Status',
+            'confirm'    => 'Confirmed',
+            'price'      => 'Price',
         ];
     }
 
-
+    /**
+     * @return User
+     */
     public function getUser()
     {
         return $this->hasOne(User::className(), ['id' => 'user_id']);
     }
 
-    public function getProduct()
+    /**
+     * @return Products[]
+     */
+    public function getProducts()
     {
-        return $this->hasOne(Products::className(), ['id' => 'product_id']);
+        return $this->hasMany(Products::className(), ['id' => 'product_id'])
+            ->viaTable(self::PRODUCT_RELATIONS_TABLE, ['order_id' => 'id'])->all();
+    }
+
+//    public function getProductsIdByManager($id){ //относится к order/index (контроллер) не доработанный вариант но рабочий
+//        $rows = (new \yii\db\Query())
+//            ->select(['product_id'])
+//            ->from(self::PRODUCT_RELATIONS_TABLE)
+//            ->where(['order_id' => $id])
+//            ->all();
+//        return $rows;
+//    }
+
+
+    public function getQuantity($productId = null)  // считаем количество
+    {
+        $quantityQuery = (new Query())->select('quantity')
+            ->from(self::PRODUCT_RELATIONS_TABLE)
+            ->where(['order_id' => $this->id]);
+
+        if($productId)
+            return $quantityQuery->andWhere(['product_id' => $productId])->scalar();
+
+        return $quantityQuery->sum('quantity');
+    }
+
+    public function calculateGrandTotal() //считаем сумму всего заказа
+    {
+        $products = $this->getProducts();
+        $sum      = 0;
+        foreach( $products as $product )
+        {
+            $quantity = $this->getQuantity($product->id);
+            $sum += $product->getFullPrice($quantity);
+        }
+
+        return $sum;
+    }
+
+    public function addProducts( $productId, $quantity )
+    {
+        $insert = Yii::$app->db->createCommand()->insert(self::PRODUCT_RELATIONS_TABLE, [
+            'order_id'   => $this->id,
+            'product_id' => $productId,
+            'quantity'   => $quantity,
+        ])->execute();
+
+        return $insert;
+    }
+
+    public function removeProducts( $productId )
+    {
+        $remove = Yii::$app->db->createCommand()->delete(self::PRODUCT_RELATIONS_TABLE, [
+            'order_id'   => $this->id,
+            'product_id' => $productId,
+        ])->execute();
+
+        return $remove;
+    }
+
+    public function updateProducts( $productId, $quantity )
+    {
+        $update = Yii::$app->db->createCommand()->update(self::PRODUCT_RELATIONS_TABLE, [
+            'quantity' => $quantity,
+        ], [
+            'order_id'   => $this->id,
+            'product_id' => $productId,
+        ])->execute();
+
+        return $update;
     }
 }
 

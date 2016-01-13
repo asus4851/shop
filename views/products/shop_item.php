@@ -1,4 +1,8 @@
 <?php
+/**
+ * @var Products $model
+ */
+use app\models\Products;
 use yii\helpers\Html;
 
 ?>
@@ -23,10 +27,12 @@ use yii\helpers\Html;
         </p>
 
         <p class="text-center">Наличие:
-            <?php if( $model->quantity > 10 )
+            <?php
+            $quantity = $model->quantity;
+            if( $quantity > 10 ) //поправить
             {
                 echo "Есть в наличии";
-            } elseif( $model->quantity > 0 && $model->quantity <= 10 )
+            } elseif( $quantity > 0 && $quantity <= 10 )
             {
                 echo "Товар заканчивается";
             } else

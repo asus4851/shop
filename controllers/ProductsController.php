@@ -20,6 +20,13 @@ use yii\widgets\Pjax;
  */
 class ProductsController extends Controller
 {
+    private $adminActions = [
+        'index',
+        'create',
+        'update',
+        'delete',
+    ];
+    
     public function behaviors()
     {
         return [
@@ -43,30 +50,14 @@ class ProductsController extends Controller
         ];
     }
 
-    //    private function checkCurrContr()
-    //    {
-    //        return [
-    //            'index',
-    //            'create',
-    //            'update',
-    //            'delete',
-    //        ];
-    //    }
-    //
-    //
-    //    public function beforeAction( $action )
-    //    {
-    //        if( in_array($action->id, $this->checkCurrContr()) )
-    //        {
-    //            if( Yii::$app->user->identity->isAdmin )
-    //            {
-    //                return true;
-    //            } else
-    //            {
-    //                throw new ForbiddenHttpException("Permission denied");
-    //            }
-    //        }
-    //    }
+
+    public function beforeAction( $action )
+    {
+        if( in_array($action->id, $this->adminActions) && Yii::$app->user->identity->isAdmin === false )
+            throw new ForbiddenHttpException("Permission denied");
+
+        return parent::beforeAction($action);
+    }
 
     /**
      * Lists all Products models.

@@ -26,7 +26,7 @@ class ProductsController extends Controller
         'update',
         'delete',
     ];
-    
+
     public function behaviors()
     {
         return [
@@ -65,8 +65,6 @@ class ProductsController extends Controller
      */
     public function actionIndex()
     {
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
             $searchModel  = new ProductsSearch();
             $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
@@ -74,10 +72,6 @@ class ProductsController extends Controller
                 'searchModel'  => $searchModel,
                 'dataProvider' => $dataProvider,
             ]);
-        } else
-        {
-            throw new ForbiddenHttpException("Permission denied");
-        }
     }
 
     public function actionShop()
@@ -124,8 +118,6 @@ class ProductsController extends Controller
 
     public function actionCreate()
     {
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
             $model = new Products();
 
             if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
@@ -137,10 +129,6 @@ class ProductsController extends Controller
                     'model' => $model,
                 ]);
             }
-        } else
-        {
-            throw new ForbiddenHttpException("Permission denied");
-        }
     }
 
     /**
@@ -153,8 +141,6 @@ class ProductsController extends Controller
      */
     public function actionUpdate( $id )
     {
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
             $model = $this->findModel($id);
 
             if( $model->load(Yii::$app->request->post()) && $this->saveModel($model) )
@@ -166,10 +152,6 @@ class ProductsController extends Controller
                     'model' => $model,
                 ]);
             }
-        } else
-        {
-            throw new ForbiddenHttpException("Permission denied");
-        }
     }
 
     /**
@@ -183,8 +165,6 @@ class ProductsController extends Controller
      */
     public function actionDelete( $id )
     {
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
             $photo           = $this->findModel($id)->photo; //получаю относительный путь картинки удаляемого продукта
             $thumbnail       = $this->findModel($id)->thumbnail;
             $deletePhoto     = unlink(Yii::getAlias('@webroot') . $photo);
@@ -199,10 +179,6 @@ class ProductsController extends Controller
             {
                 die('Не удалось подчистить картинки при удалении продукта');
             }
-        } else
-        {
-            throw new ForbiddenHttpException("Permission denied");
-        }
     }
 
     /**

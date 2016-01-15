@@ -87,8 +87,6 @@ class OrdersController extends Controller
      */
     public function actionCreate()
     {
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
             $model = new Orders();
 
             if( $model->load(Yii::$app->request->post()) && $model->save() )
@@ -100,10 +98,6 @@ class OrdersController extends Controller
                     'model' => $model,
                 ]);
             }
-        } else{
-            throw new ForbiddenHttpException("Permission denied");
-        }
-
     }
 
     public function actionStat()
@@ -240,8 +234,6 @@ class OrdersController extends Controller
      */
     public function actionUpdate( $id )
     {
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
             $model = $this->findModel($id);
 
             if( $model->load(Yii::$app->request->post()) && $model->save() )
@@ -253,10 +245,6 @@ class OrdersController extends Controller
                     'model' => $model,
                 ]);
             }
-        }else{
-            throw new ForbiddenHttpException("Permission denied");
-        }
-
     }
 
     /**
@@ -267,15 +255,9 @@ class OrdersController extends Controller
      */
     public function actionDelete( $id )
     {
-        if( Yii::$app->user->identity->isAdmin === true )
-        {
             $this->findModel($id)->delete();
 
             return $this->redirect(['index']);
-        } else{
-            throw new ForbiddenHttpException("Permission denied");
-        }
-
     }
 
     /**

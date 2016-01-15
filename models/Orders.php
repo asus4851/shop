@@ -86,7 +86,7 @@ class Orders extends \yii\db\ActiveRecord
 
     public function calculateGrandTotal() //считаем сумму всего заказа
     {
-        $products = $this->getProducts();
+        $products = $this->getProducts(); //получаем все продукты этого заказа
         $sum      = 0;
         foreach( $products as $product )
         {

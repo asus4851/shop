@@ -127,7 +127,7 @@ class OrdersController extends Controller
             die('error with user'); // $this->redirect('/products/shop'); //error
 
         $order = Orders::findOne(['user_id' => Yii::$app->user->identity->id, 'confirm' => 0]); //найти не подтвержденный заказ
-        if(empty($order))
+        if(empty($order)) //если не нашли заказ то создаем новый
         {
             $order          = new Orders();
             $order->user_id = Yii::$app->user->identity->id;
@@ -139,7 +139,7 @@ class OrdersController extends Controller
                 die('error on creating order'); //$this->redirect('/products/shop'); //error
         }
 
-        $orderProducts = $order->getProducts();  //получить список продуктов
+        $orderProducts = $order->getProducts();  //получить список продуктов этого заказа
         $productIdList = []; //заносим в массив id
         foreach($orderProducts as $orderProduct)
         {
